@@ -1,6 +1,6 @@
 name: auto_const
 description: A simple command-line application.
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/carlosfiori/dart-auto-const
 repository: https://github.com/carlosfiori/dart-auto-const
 issue_tracker: https://github.com/carlosfiori/dart-auto-const/issues
