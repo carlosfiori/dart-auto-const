@@ -28,17 +28,16 @@ class FileToChange {
 
 Future<void> main(List<String> arguments) async {
   await analyzeAndAddConsts();
-
-  await reanalyzeAndRemoveUnncessaryConsts();
+  await reanalyzeAndRemoveUnnecessaryConsts();
 }
 
-Future<void> reanalyzeAndRemoveUnncessaryConsts() async {
+Future<void> reanalyzeAndRemoveUnnecessaryConsts() async {
   stdout.writeln('### Started analyze to remove unnecessary const ###');
   final resultAnalyze = Process.runSync('dart', ['analyze']);
   final stdOutAnalyze = resultAnalyze.stdout;
   final constRegex = RegExp('.*unnecessary_const.*\n', multiLine: true);
   final allMatchs = constRegex.allMatches(stdOutAnalyze);
-  final lineRegex = RegExp('info - (.*) - Avoid');
+  final lineRegex = RegExp("info - (.*) - Unnecessary 'const'");
   final filesToChange = <FileToChange>[];
   for (var match in allMatchs) {
     final matchLine = match.group(0)!.trim();
@@ -68,13 +67,21 @@ Future<void> analyzeAndAddConsts() async {
   final stdOutAnalyze = resultAnalyze.stdout;
   final constRegex = RegExp('.*prefer_const_constructors.*\n', multiLine: true);
   final allMatchs = constRegex.allMatches(stdOutAnalyze);
-  final lineRegex = RegExp('info - (.*) - Prefer');
+  final lineRegex = RegExp("info - (.*) - Use 'const'");
   final filesToChange = <FileToChange>[];
   for (var match in allMatchs) {
     final matchLine = match.group(0)!.trim();
     final lineMatch = lineRegex.firstMatch(matchLine);
     final lineWithData = lineMatch!.group(1);
-    filesToChange.add(FileToChange.fromLineWithData(lineWithData!));
+    var fileToChange = FileToChange.fromLineWithData(lineWithData!);
+    final hasChangeToThisLine = filesToChange.indexWhere(
+          (element) => element.line == fileToChange.line,
+        ) !=
+        -1;
+
+    if (!hasChangeToThisLine) {
+      filesToChange.add(fileToChange);
+    }
   }
   stdout.writeln('Const to add: ${filesToChange.length}');
 
